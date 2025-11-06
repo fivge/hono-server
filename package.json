@@ -1,10 +1,11 @@
 {
   "name": "tour-of-hono",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/main.ts"
   },
   "dependencies": {
-    "hono": "^4.10.4"
+    "hono": "^4.10.4",
+    "mongoose": "^8.19.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.4",
