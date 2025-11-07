@@ -1,0 +1,43 @@
+@url = http://127.0.0.1:3000/api/user
+
+
+
+###
+GET {{url}}/ping
+
+
+
+###
+GET {{url}}/
+
+###
+GET {{url}}/?page_size=10&page_index=2&keywords=
+
+
+
+
+###
+POST {{url}}/register
+Content-Type: application/json
+
+{
+  "name": "fluffy",
+  "password": "123456"
+}
+
+
+###
+POST {{url}}/login
+Content-Type: application/json
+
+{
+  "name": "fluffy",
+  "password": "123456"
+}
+
+
+
+###
+POST {{url}}/update
+
+
