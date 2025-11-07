@@ -1,5 +1,7 @@
 import { Hono } from "hono";
+import { jwt } from "hono/jwt";
 import { PAGE_INDEX, PAGE_SIZE } from "../../common/consts";
+import { jwtMiddleware } from "../../core/middleware/jwt";
 import userService from "./user.service";
 
 const user = new Hono();
@@ -9,7 +11,7 @@ user
 		return c.text("pong");
 	})
 	// /users
-	.get("/", async (c) => {
+	.get("/", jwtMiddleware, async (c) => {
 		try {
 			const pageSize = +(c.req.query("page_size") || PAGE_SIZE);
 			const pageIndex = +(c.req.query("page_index") || PAGE_INDEX);
@@ -41,6 +43,7 @@ user
 			}
 
 			const users = await userService.find(where, opt);
+
 			// TODO hide password etc
 			return c.json(users);
 		} catch (error: any) {
@@ -50,31 +53,32 @@ user
 
 		// return c.text("pong");
 	})
+	.get("/me", jwtMiddleware, async (c) => {
+		try {
+			const payload = c.get("jwtPayload");
+			const user = await userService.getById(payload.sub);
+			// TODO filter user info
+			return c.json(user);
+		} catch (error) {
+			return c.json({ error: error?.message ?? "Internal Server Error" }, 500);
+		}
+	})
 	.post("/login", async (c) => {
-		const params = await c.req.json();
-		const { name, password } = params;
+		try {
+			const params = await c.req.json();
+			const { name, password } = params;
 
-		// TODO validate
-		if (!name || !password) {
-			return c.json({ error: "Name and password are required" }, 400);
+			// TODO validate
+			if (!name || !password) {
+				return c.json({ error: "Name and password are required" }, 400);
+			}
+
+			const tokens = await userService.login({ name, password });
+
+			return c.json({ code: 0, message: "Login successful", data: tokens });
+		} catch (error: any) {
+			return c.json({ error: error?.message ?? "Internal Server Error" }, 500);
 		}
-
-		const user = await userService.getByName(name);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// TODO verify password
-		if (user.password !== password) {
-			return c.json({ error: "Invalid password" }, 401);
-		}
-
-		// TODO generate token
-		// const token = jwt.sign({ id: user.id }, jwtSecret, {
-		// 	expiresIn: jwtExpire,
-		// });
-
-		return c.json({ message: "Login successful", token: "xxx" });
 	})
 	// /:id
 	.post("/update", async (c) => {
@@ -87,19 +91,22 @@ user
 			const { name, password } = params;
 			// TODO validate
 
-			const user = await userService.getByName(name);
-			if (user) {
+			const userExists = await userService.getByName(name);
+			if (userExists) {
 				return c.json({ error: "User already exists" }, 400);
 			}
 
-			// TODO hash
-			const newPassword = password;
-			const newUser = await userService.create({ name, password: newPassword });
+			const user = await userService.create({ name, password });
 			// TODO create project
 			// const project = await projectService.create({ user: newUser.id,name, password: newPassword });
 			// TODO create mock
 
-			return c.json({ message: "User created successfully" });
+			// TODO add a common bean
+			return c.json({
+				code: 0,
+				message: "User created successfully",
+				data: user,
+			});
 		} catch (error: any) {
 			console.error(error);
 			return c.json({ error: error?.message ?? "Internal Server Error" }, 500);

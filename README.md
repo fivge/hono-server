@@ -49,6 +49,33 @@ bun --print process.env
 
 ## Arch
 
+### id
+
+> a
+
+```ts
+import { randomUUIDv7 } from "bun";
+
+const uid = randomUUIDv7();
+```
+
+> b
+
+```ts
+const uid = new mongoose.Types.ObjectId();
+```
+
+> c
+
+```ts
+	// const id = hashids.encode(uid);
+		const id = hashids.encodeHex(uid.toString());
+```
+
+### hash
+
+
+
 ## TODO
 
 > userid

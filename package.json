@@ -4,6 +4,7 @@
     "dev": "bun run --hot src/main.ts"
   },
   "dependencies": {
+    "hashids": "^2.3.0",
     "hono": "^4.10.4",
     "mongoose": "^8.19.3"
   },

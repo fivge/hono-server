@@ -1,5 +1,5 @@
 @url = http://127.0.0.1:3000/api/user
-
+@token = 
 
 
 ###
@@ -13,7 +13,13 @@ GET {{url}}/
 ###
 GET {{url}}/?page_size=10&page_index=2&keywords=
 
+###
+GET {{url}}/
+Authorization: Bearer {{token}}
 
+###
+GET {{url}}/me
+Authorization: Bearer {{token}}
 
 
 ###
@@ -21,7 +27,7 @@ POST {{url}}/register
 Content-Type: application/json
 
 {
-  "name": "fluffy",
+  "name": "fluffy2",
   "password": "123456"
 }
 
@@ -31,10 +37,36 @@ POST {{url}}/login
 Content-Type: application/json
 
 {
-  "name": "fluffy",
+  "name": "fluffy1",
   "password": "123456"
 }
 
+###
+POST {{url}}/login
+Content-Type: application/json
+
+{
+  "name": "fluffy2",
+  "password": "123456"
+}
+
+###
+POST {{url}}/login
+Content-Type: application/json
+
+{
+  "name": "fluffy1",
+  "password": "12345678"
+}
+
+###
+POST {{url}}/login
+Content-Type: application/json
+
+{
+  "name": "fluffy3",
+  "password": "123456"
+}
 
 
 ###
