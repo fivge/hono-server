@@ -1,8 +1,11 @@
+import { HttpError } from "@common/api";
+import { hashids } from "@core/auth/hash";
+import jwtService from "@core/auth/jwt";
+import { encodePassword, verifyPassword } from "@core/auth/password";
 import mongoose from "mongoose";
-import { hashids } from "../../core/auth/hash";
-import jwt from "../../core/auth/jwt";
 import { UserModel } from "../../schemas/user";
 import { userTransformer } from "./shared/user.transformer";
+import type { LoginRequestDto } from "./user.dto";
 import userMapper from "./user.mapper";
 
 const userService = {
@@ -23,7 +26,7 @@ const userService = {
 	create: async (params: any) => {
 		const { name, password } = params;
 
-		const passwordHash = await Bun.password.hash(password);
+		const passwordHash = await encodePassword(password);
 
 		const uid = new mongoose.Types.ObjectId();
 		const id = hashids.encodeHex(uid.toString());
@@ -64,31 +67,21 @@ const userService = {
 		// const deletedUser = await UserModel.deleteOne({ _id: id });
 		// return deletedUser;
 	},
-	verifyPassword: async (password: string, passwordHash: string) => {
-		const isMatch = await Bun.password.verify(password, passwordHash);
-		return isMatch;
-	},
-	login: async (params: any) => {
+	login: async (params: LoginRequestDto) => {
 		const { name, password } = params;
 
 		const user = await userMapper.getByName(name);
 		if (!user) {
-			throw new Error("User not found");
+			throw HttpError({ code: 400, message: "user not found" });
 		}
 
-		const isMatch = await userService.verifyPassword(password, user.password);
+		const isMatch = await verifyPassword(password, user.password);
 		if (!isMatch) {
-			throw new Error("Invalid password");
+			throw HttpError({ code: 400, message: "invalid password" });
 		}
 
-		// TODO generate token
-		// const token = "xxx";
-		const token = await jwt.sign({ id: user.id });
+		const token = await jwtService.sign({ id: user.id });
 
-		console.log("********* userInfo", user, token);
-
-		// TODO filter user info
-		// * or get user info in another api when login success, to recheck token
 		const publicUser = userTransformer(user);
 
 		return { token, user: publicUser };

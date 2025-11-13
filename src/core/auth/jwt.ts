@@ -1,6 +1,6 @@
-import { decode, sign, verify } from "hono/jwt";
+import { sign, verify } from "hono/jwt";
 
-const jwt = {
+const jwtService = {
 	sign: async (params: any) => {
 		const payload = {
 			sub: params.id,
@@ -26,4 +26,4 @@ const jwt = {
 	},
 };
 
-export default jwt;
+export default jwtService;

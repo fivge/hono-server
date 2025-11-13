@@ -1,5 +1,5 @@
+import { connect, disconnect } from "@core/db/mongo";
 import app from "./app";
-import { connect, disconnect } from "./mongo";
 
 const PORT = process.env.PORT || 3000;
 
