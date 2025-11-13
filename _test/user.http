@@ -7,30 +7,16 @@ GET {{url}}/ping
 
 
 ###
-GET {{url}}/users
-###
-GET {{url}}/users/?page_size=10&page_index=2&keywords=
-###
-GET {{url}}/users
-Authorization: Bearer {{token}}
-
-
-###
-GET {{url}}/me
-Authorization: Bearer {{token}}
-
-
-###
 POST {{url}}/register
 Content-Type: application/json
 
 {
-  "name": "fluffy2",
+  "name": "fluffy1",
   "password": "123456"
 }
 
 
-###
+### success
 POST {{url}}/login
 Content-Type: application/json
 
@@ -38,16 +24,16 @@ Content-Type: application/json
   "name": "fluffy1",
   "password": "123456"
 }
-###
+### success - filter unused params
 POST {{url}}/login
 Content-Type: application/json
 
 {
   "name": "fluffy2",
-  "password": "123456"
+  "password": "123456",
+  "foo": "bar"
 }
-
-###
+### validator password
 POST {{url}}/login
 Content-Type: application/json
 
@@ -55,18 +41,15 @@ Content-Type: application/json
   "name": "fluffy1",
   "password": "12345678"
 }
-
-###
+### validator name
 POST {{url}}/login
 Content-Type: application/json
 
 {
   "name": "fluffy3",
-  "password": "123456",
-  "email": "fluffy3@example.com"
+  "password": "123456"
 }
-
-###
+### validator params
 POST {{url}}/login
 Content-Type: application/json
 
@@ -75,6 +58,6 @@ Content-Type: application/json
 
 
 ###
-POST {{url}}/update
-
+GET {{url}}/me
+Authorization: Bearer {{token}}
 

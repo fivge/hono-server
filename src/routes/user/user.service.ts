@@ -1,29 +1,15 @@
 import { HttpError } from "@common/api";
 import { hashids } from "@core/auth/hash";
-import jwtService from "@core/auth/jwt";
+import jwtService, { type IJwtPayload } from "@core/auth/jwt";
 import { encodePassword, verifyPassword } from "@core/auth/password";
 import mongoose from "mongoose";
-import { UserModel } from "../../schemas/user";
+
 import { userTransformer } from "./shared/user.transformer";
-import type { LoginRequestDto } from "./user.dto";
+import type { LoginRequestDto, RegisterRequestDto } from "./user.dto";
 import userMapper from "./user.mapper";
 
 const userService = {
-	find: async (query: any, opt: any) => {
-		const users = await UserModel.find(query, {}, opt);
-		return users;
-	},
-	getById: async (id: string) => {
-		const user = await UserModel.findOne({ id });
-		const publicUser = userTransformer(user);
-		return publicUser;
-	},
-	getByName: async (name: string) => {
-		const user = await UserModel.findOne({ name });
-		const publicUser = userTransformer(user);
-		return publicUser;
-	},
-	create: async (params: any) => {
+	_create: async (params: RegisterRequestDto) => {
 		const { name, password } = params;
 
 		const passwordHash = await encodePassword(password);
@@ -43,9 +29,8 @@ const userService = {
 		};
 
 		const userModel = await userMapper.create(user);
-		const publicUser = userTransformer(userModel);
 
-		return publicUser;
+		return userModel;
 	},
 	update: async (user: any) => {
 		// TODO
@@ -80,11 +65,36 @@ const userService = {
 			throw HttpError({ code: 400, message: "invalid password" });
 		}
 
-		const token = await jwtService.sign({ id: user.id });
+		const token = await jwtService.sign({ id: user.id, role: "user" });
 
 		const publicUser = userTransformer(user);
 
 		return { token, user: publicUser };
+	},
+	register: async (params: RegisterRequestDto) => {
+		const { name } = params;
+
+		const userExists = await userMapper.getByName(name);
+		if (userExists) {
+			throw HttpError({ code: 400, message: "user already exists" });
+		}
+
+		const userModel = await userService._create(params);
+		// TODO create project
+		// const project = await projectService.create({ user: newUser.id,name, password: newPassword });
+		// TODO create mock
+
+		const publicUser = userTransformer(userModel);
+
+		return publicUser;
+	},
+	getMe: async (payload: IJwtPayload) => {
+		const user = await userMapper.getById(payload.sub);
+		if (!user) {
+			throw HttpError({ code: 400, message: "user not found" });
+		}
+		const publicUser = userTransformer(user);
+		return publicUser;
 	},
 };
 

@@ -1,10 +1,22 @@
 import { sign, verify } from "hono/jwt";
+import type { JWTPayload } from "hono/utils/jwt/types";
+
+export interface IJwtPayload extends JWTPayload {
+	sub: string;
+	role: "user" | "admin";
+	exp: number;
+}
+
+interface SignParams {
+	id: string;
+	role: "user" | "admin";
+}
 
 const jwtService = {
-	sign: async (params: any) => {
-		const payload = {
+	sign: async (params: SignParams) => {
+		const payload: IJwtPayload = {
 			sub: params.id,
-			role: "user",
+			role: params.role,
 			exp: Math.floor(Date.now() / 1000) + 60 * 30, // Token expires in 5 minutes
 		};
 
